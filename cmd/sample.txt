@@ -1,0 +1,3 @@
+I found the search_string in the file.
+Another line also contains the search_string
+This line doesnot contain anything

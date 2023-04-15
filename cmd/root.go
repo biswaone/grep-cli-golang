@@ -1,30 +1,59 @@
 /*
 Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"bufio"
+	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "grep-cli-golang",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "grep command line utility in golang",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		// grep from stdin
+		if len(args) == 0 {
+			searchString(os.Stdin, "abc")
+		}
+
+		// grep from files
+		if len(args) > 0 {
+			for _, arg := range args[1:] {
+				file, err := os.Open(arg)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "failed to open file %q: %v\n", arg, err)
+					continue // read the next file
+				}
+				defer file.Close()
+				Strarr, _ := searchString(file, args[0])
+				fmt.Println(Strarr)
+			}
+
+		}
+
+	},
+}
+
+// write test cases for this function
+func searchString(r io.Reader, str string) ([]string, error) {
+	arr := []string{}
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), str) {
+			arr = append(arr, scanner.Text())
+		}
+
+	}
+	return arr, nil
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -47,5 +76,3 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-
