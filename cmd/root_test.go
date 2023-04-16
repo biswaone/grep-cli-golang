@@ -42,7 +42,7 @@ func TestSearchStringFile(t *testing.T) {
 			file, _ := os.Open(tt.filename)
 			defer file.Close()
 
-			got, err := searchString(file, tt.searchStr)
+			got, err := grep(file, tt.searchStr)
 			if err != nil {
 				t.Errorf("searchString() error = %v, wantErr %v", err, tt.err)
 			}

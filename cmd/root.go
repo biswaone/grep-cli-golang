@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// grep from stdin
 		if len(args) == 0 {
-			searchString(os.Stdin, "abc")
+			grep(os.Stdin, "abc")
 		}
 
 		// grep from files
@@ -34,7 +34,7 @@ var rootCmd = &cobra.Command{
 					continue // read the next file
 				}
 				defer file.Close()
-				Strarr, _ := searchString(file, args[0])
+				Strarr, _ := grep(file, args[0])
 				fmt.Println(Strarr)
 			}
 
@@ -44,7 +44,7 @@ var rootCmd = &cobra.Command{
 }
 
 // write test cases for this function
-func searchString(r io.Reader, str string) ([]string, error) {
+func grep(r io.Reader, str string) ([]string, error) {
 	arr := []string{}
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
