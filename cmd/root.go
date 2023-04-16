@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 
@@ -21,10 +22,13 @@ var rootCmd = &cobra.Command{
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		// grep from stdin
-		if len(args) == 0 {
-			grep(os.Stdin, "abc")
+		if len(args) == 1 {
+			Strarr, err := grep(os.Stdin, args[0])
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(Strarr)
 		}
-
 		// grep from files
 		if len(args) > 0 {
 			for _, arg := range args[1:] {
