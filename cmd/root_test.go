@@ -11,6 +11,7 @@ func TestGrepFile(t *testing.T) {
 	tests := []struct {
 		name      string
 		filename  string
+		flag      flags
 		searchStr string
 		want      []string
 		err       error
@@ -18,6 +19,7 @@ func TestGrepFile(t *testing.T) {
 		{
 			name:      "Zero matches in file",
 			filename:  "sample.txt",
+			flag:      flags{outputToFile: false, caseSensitive: false},
 			searchStr: "test",
 			want:      []string{},
 			err:       nil,
@@ -25,6 +27,7 @@ func TestGrepFile(t *testing.T) {
 		{
 			name:      "One match in file",
 			filename:  "sample.txt",
+			flag:      flags{outputToFile: false, caseSensitive: false},
 			searchStr: "found",
 			want:      []string{"I found the search_string in the file."},
 			err:       nil,
@@ -32,6 +35,7 @@ func TestGrepFile(t *testing.T) {
 		{
 			name:      "Two matches in file",
 			filename:  "sample.txt",
+			flag:      flags{outputToFile: false, caseSensitive: false},
 			searchStr: "search_string",
 			want:      []string{"I found the search_string in the file.", "Another line also contains the search_string"},
 			err:       nil,
@@ -43,7 +47,7 @@ func TestGrepFile(t *testing.T) {
 			file, _ := os.Open(tt.filename)
 			defer file.Close()
 
-			got, err := grep(file, tt.searchStr)
+			got, err := grep(file, tt.searchStr, tt.flag)
 			if err != nil {
 				t.Errorf("searchString() error = %v, wantErr %v", err, tt.err)
 			}
@@ -60,10 +64,11 @@ func TestGrepStdin(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	flag := flags{outputToFile: false, caseSensitive: false}
 	oldStdin := os.Stdin
 	defer func() { os.Stdin = oldStdin }() // restore original Stdin
 	os.Stdin = file
-	got, err := grep(file, "foo")
+	got, err := grep(file, "foo", flag)
 	if err != nil {
 		t.Errorf("Input from stdin failed %v", err)
 	}

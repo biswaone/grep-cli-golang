@@ -9,10 +9,17 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
+	"regexp"
 
 	"github.com/spf13/cobra"
 )
+
+type flags struct {
+	outputToFile  bool
+	caseSensitive bool
+}
+
+var flag flags
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -23,7 +30,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// grep from stdin
 		if len(args) == 1 {
-			Strarr, err := grep(os.Stdin, args[0])
+			Strarr, err := grep(os.Stdin, args[0], flag)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -38,7 +45,7 @@ var rootCmd = &cobra.Command{
 					continue // read the next file
 				}
 				defer file.Close()
-				Strarr, _ := grep(file, args[0])
+				Strarr, _ := grep(file, args[0], flag)
 				fmt.Println(Strarr)
 			}
 
@@ -48,14 +55,25 @@ var rootCmd = &cobra.Command{
 }
 
 // write test cases for this function
-func grep(r io.Reader, str string) ([]string, error) {
+func grep(r io.Reader, str string, flag flags) ([]string, error) {
 	arr := []string{}
 	scanner := bufio.NewScanner(r)
+	searchPattern, err := regexp.Compile(str)
+	if err != nil {
+		return nil, err
+	}
+	if flag.caseSensitive {
+		searchPattern = regexp.MustCompile("(?i)" + str)
+	}
+
 	for scanner.Scan() {
-		if strings.Contains(scanner.Text(), str) {
+		if searchPattern.MatchString(scanner.Text()) {
 			arr = append(arr, scanner.Text())
 		}
 
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 	return arr, nil
 }
@@ -70,13 +88,7 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.grep-cli-golang.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolVarP(&flag.outputToFile, "output", "o", false, "output to file")
+	rootCmd.Flags().BoolVarP(&flag.caseSensitive, "case-sensitive", "i", false, "case sensitive")
 }
