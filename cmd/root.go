@@ -31,7 +31,6 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		// recursively read from directory
 		searchStr := args[0]
 		path := args[1]
 		fileInfo, err := os.Stat(path)
@@ -85,23 +84,42 @@ var rootCmd = &cobra.Command{
 
 		// grep from stdin
 		if len(args) == 1 {
-			Strarr, err := grep(os.Stdin, args[0], flag)
+			Strarr, err := grep(os.Stdin, searchStr, flag)
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(Strarr)
-		}
-		// grep from files
-		if !mode.IsDir() {
-			for _, arg := range args[1:] {
-				file, err := os.Open(arg)
+			if flag.outputToFile {
+				outputFile := args[2]
+				err := writeToFile(Strarr, outputFile)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "failed to open file %q: %v\n", arg, err)
-					continue // read the next file
+					log.Fatal(err)
 				}
-				defer file.Close()
-				Strarr, _ := grep(file, args[0], flag)
-				fmt.Println(Strarr)
+			} else { // print to stdout
+				for _, line := range Strarr {
+					fmt.Println(line)
+				}
+			}
+
+		}
+		// grep from a file
+		if !mode.IsDir() {
+			file, err := os.Open(path)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to open file %q: %v\n", path, err)
+			}
+			defer file.Close()
+			Strarr, _ := grep(file, searchStr, flag)
+
+			if flag.outputToFile {
+				outputFile := args[2]
+				err := writeToFile(Strarr, outputFile)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else { //print to stdout
+				for _, line := range Strarr {
+					fmt.Println(line)
+				}
 			}
 
 		}
@@ -131,6 +149,27 @@ func grep(r io.Reader, str string, flag flags) ([]string, error) {
 		return nil, err
 	}
 	return arr, nil
+}
+
+func writeToFile(Strarr []string, filename string) error {
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for _, line := range Strarr {
+		_, err := writer.WriteString(line + "\n")
+		if err != nil {
+			return err
+		}
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
