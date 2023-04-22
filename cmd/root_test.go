@@ -80,3 +80,6 @@ func TestGrepStdin(t *testing.T) {
 	}
 
 }
+
+//TODO: Add test cases for writing to file
+//TOOD: Add test cases for flags
