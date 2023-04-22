@@ -22,3 +22,29 @@ cd bin
 ../test-directory/file2.txt this is another test line 
 ../test-directory/inner/inner_file.txt this file contains a test line
 ```
+## Flags
+-i: case insensitive search 
+```
+./go-grep -i foo
+bar
+barbazfoo
+Foobar
+food
+^D
+barbazfoo
+Foobar
+food
+```
+
+-o: output to file
+```
+./go-grep search_string ../sample.txt -o outfile.txt
+cat outfile.txt
+I found the search_string in the file.
+Another line also contains the search_string
+```
+-c: count match
+```
+./go-grep search_string -c  ../sample.txt
+2
+```
