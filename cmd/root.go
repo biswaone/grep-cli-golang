@@ -128,6 +128,9 @@ var rootCmd = &cobra.Command{
 					if err != nil {
 						log.Fatal(err)
 					}
+				} else if flag.matchCount {
+					fmt.Println(len(Strarr)) // print line count
+
 				} else { //print to stdout
 					for _, line := range Strarr {
 						fmt.Println(line)
